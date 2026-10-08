@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Iniciar sessão · WorkFace{% endblock %}
+{% block body_class %}layout-auth{% endblock %}
+{% block layout %}
+<div class="auth-wrap">
+  <div class="auth-hero">
+    <div class="hero-brand">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="WorkFace" class="auth-logo">
+      <h1 class="brand-name">WorkFace</h1>
+    </div>
+    <h1>Gestão de presenças<br><span>com reconhecimento facial</span></h1>
+    <p>Plataforma de gestão de presenças, horários e salários para equipas de armazém, distribuição, vendas e administrativo.</p>
+    <ul class="hero-list">
+      <li><i class="fa-solid fa-camera"></i> Identificação automática por câmara</li>
+      <li><i class="fa-solid fa-chart-line"></i> Estatísticas de presenças e horas</li>
+      <li><i class="fa-solid fa-money-bill-trend-up"></i> Cálculo automático de salários</li>
+    </ul>
+    <a class="btn ghost light" href="{{ url_for('kiosk.index') }}"><i class="fa-solid fa-display"></i> Modo Kiosk (tablet)</a>
+  </div>
+  <div class="auth-card">
+    <h2>Iniciar sessão</h2>
+    <p>Aceda ao painel administrativo ou ao seu portal pessoal.</p>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="flash flash-{{ cat }}">{{ msg }}</div>
+      {% endfor %}
+    {% endwith %}
+    <form method="post" class="form">
+      <label>Email
+        <input type="email" name="email" autocomplete="username" required autofocus>
+      </label>
+      <label>Password
+        <input type="password" name="password" autocomplete="current-password" required>
+      </label>
+      <button class="btn primary block" type="submit"><i class="fa-solid fa-arrow-right-to-bracket"></i> Entrar</button>
+    </form>
+    <div class="auth-hint">
+      <strong>Conta admin de demonstração</strong>
+      <code>admin@empresa.pt / admin123</code>
+    </div>
+  </div>
+</div>
+{% endblock %}

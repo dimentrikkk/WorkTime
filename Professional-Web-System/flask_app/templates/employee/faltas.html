@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Faltas{% endblock %}
+{% block nav %}{% include "_employee_nav.html" %}{% endblock %}
+{% block page_title %}Faltas{% endblock %}
+{% block page_subtitle %}Histórico de ausências{% endblock %}
+{% block content %}
+<div class="card">
+  <table class="data">
+    <thead><tr><th>Data</th><th>Justificada</th><th>Motivo</th></tr></thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td>{{ r.data }}</td>
+        <td>{% if r.justificada %}<span class="badge in">Sim</span>{% else %}<span class="badge out">Não</span>{% endif %}</td>
+        <td>{{ r.motivo or '—' }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="3" class="muted center">Sem faltas registadas.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Reconhecimento facial · {{ func.nome_completo }}{% endblock %}
+{% block nav %}{% include "_admin_nav.html" %}{% endblock %}
+{% block page_title %}Captura facial{% endblock %}
+{% block page_subtitle %}{{ func.nome_completo }} · ID #{{ func.id }}{% endblock %}
+{% block page_actions %}
+<a class="btn ghost" href="{{ url_for('admin.funcionarios_list') }}"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
+{% endblock %}
+{% block content %}
+<div class="grid two-col">
+  <div class="card">
+    <header><h3><i class="fa-solid fa-camera"></i> Câmara</h3></header>
+    <div class="cam-wrap">
+      <video id="video" autoplay muted playsinline></video>
+      <canvas id="canvas" style="display:none"></canvas>
+    </div>
+    <div class="actions-row">
+      <button id="btnCapture" class="btn primary"><i class="fa-solid fa-circle"></i> Capturar amostra</button>
+      <button id="btnClear" class="btn danger ghost"><i class="fa-solid fa-trash"></i> Apagar amostras</button>
+    </div>
+    <p class="muted small">Capture entre 3 e 5 imagens em ângulos ligeiramente diferentes para uma identificação fiável.</p>
+  </div>
+  <div class="card">
+    <header><h3><i class="fa-solid fa-images"></i> Amostras</h3></header>
+    <div class="status">
+      <span>Total registado: <strong id="sampleCount">{{ samples }}</strong></span>
+      <span class="muted small">Mínimo recomendado: 3</span>
+    </div>
+    <div id="thumbs" class="thumbs"></div>
+    <div id="msg" class="msg"></div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const FID = {{ func.id }};
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const btnCapture = document.getElementById('btnCapture');
+const btnClear = document.getElementById('btnClear');
+const sampleCount = document.getElementById('sampleCount');
+const thumbs = document.getElementById('thumbs');
+const msg = document.getElementById('msg');
+
+navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } })
+  .then(stream => video.srcObject = stream)
+  .catch(err => msg.innerHTML = '<div class="flash flash-error">Sem acesso à câmara: ' + err.message + '</div>');
+
+function showMsg(text, type='success') {
+  msg.innerHTML = `<div class="flash flash-${type}">${text}</div>`;
+  setTimeout(() => msg.innerHTML = '', 4000);
+}
+
+btnCapture.addEventListener('click', async () => {
+  if (!video.videoWidth) return;
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+  btnCapture.disabled = true;
+  btnCapture.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> A processar...';
+  try {
+    const r = await fetch(`/api/funcionarios/${FID}/face`, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ image: dataUrl }),
+    });
+    const data = await r.json();
+    if (data.ok) {
+      sampleCount.textContent = data.samples;
+      const img = document.createElement('img');
+      img.src = dataUrl;
+      thumbs.prepend(img);
+      showMsg(`Amostra ${data.samples} guardada com sucesso.`);
+    } else {
+      showMsg(data.error || 'Erro ao processar.', 'error');
+    }
+  } catch (e) {
+    showMsg('Erro de rede: ' + e.message, 'error');
+  } finally {
+    btnCapture.disabled = false;
+    btnCapture.innerHTML = '<i class="fa-solid fa-circle"></i> Capturar amostra';
+  }
+});
+
+btnClear.addEventListener('click', async () => {
+  if (!confirm('Apagar todas as amostras faciais deste funcionário?')) return;
+  await fetch(`/api/funcionarios/${FID}/face/clear`, { method: 'POST' });
+  sampleCount.textContent = '0';
+  thumbs.innerHTML = '';
+  showMsg('Amostras apagadas.');
+});
+</script>
+{% endblock %}

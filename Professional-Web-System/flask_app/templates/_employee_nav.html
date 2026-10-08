@@ -1,0 +1,26 @@
+{% set ep = request.endpoint or '' %}
+<a href="{{ url_for('employee.dashboard') }}" class="{{ 'active' if ep == 'employee.dashboard' }}" title="Dashboard">
+  <i class="fa-solid fa-gauge-high"></i><span class="nav-label">Dashboard</span>
+</a>
+<a href="{{ url_for('employee.registos') }}" class="{{ 'active' if ep == 'employee.registos' }}" title="Registos">
+  <i class="fa-solid fa-clock-rotate-left"></i><span class="nav-label">Registos</span>
+</a>
+<a href="{{ url_for('employee.horario') }}" class="{{ 'active' if ep == 'employee.horario' }}" title="Horário">
+  <i class="fa-solid fa-calendar-week"></i><span class="nav-label">Horário</span>
+</a>
+<a href="{{ url_for('employee.salario') }}" class="{{ 'active' if ep == 'employee.salario' }}" title="Salário">
+  <i class="fa-solid fa-money-bill-wave"></i><span class="nav-label">Salário</span>
+</a>
+<a href="{{ url_for('employee.faltas') }}" class="{{ 'active' if ep == 'employee.faltas' }}" title="Faltas">
+  <i class="fa-solid fa-user-slash"></i><span class="nav-label">Faltas</span>
+</a>
+<a href="{{ url_for('employee.justificacoes') }}" class="{{ 'active' if ep == 'employee.justificacoes' }}" title="Justificações">
+  <i class="fa-solid fa-file-circle-check"></i><span class="nav-label">Justificações</span>
+</a>
+<a href="{{ url_for('employee.ferias') }}" class="{{ 'active' if ep == 'employee.ferias' }}" title="Férias">
+  <i class="fa-solid fa-umbrella-beach"></i><span class="nav-label">Férias</span>
+</a>
+<div class="nav-sep"></div>
+<a href="{{ url_for('employee.perfil') }}" class="{{ 'active' if ep == 'employee.perfil' }}" title="O Meu Perfil">
+  <i class="fa-solid fa-user-gear"></i><span class="nav-label">O Meu Perfil</span>
+</a>

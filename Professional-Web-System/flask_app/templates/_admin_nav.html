@@ -1,0 +1,35 @@
+{% set ep = request.endpoint or '' %}
+<a href="{{ url_for('admin.dashboard') }}" class="{{ 'active' if ep == 'admin.dashboard' }}" title="Dashboard">
+  <i class="fa-solid fa-gauge-high"></i><span class="nav-label">Dashboard</span>
+</a>
+<a href="{{ url_for('admin.funcionarios_list') }}" class="{{ 'active' if 'funcionarios' in ep }}" title="Funcionários">
+  <i class="fa-solid fa-users"></i><span class="nav-label">Funcionários</span>
+</a>
+<a href="{{ url_for('admin.horarios') }}" class="{{ 'active' if ep == 'admin.horarios' }}" title="Horários">
+  <i class="fa-solid fa-calendar-week"></i><span class="nav-label">Horários</span>
+</a>
+<a href="{{ url_for('admin.registos') }}" class="{{ 'active' if ep == 'admin.registos' }}" title="Registos de Ponto">
+  <i class="fa-solid fa-clock-rotate-left"></i><span class="nav-label">Registos de Ponto</span>
+</a>
+<a href="{{ url_for('admin.faltas') }}" class="{{ 'active' if ep == 'admin.faltas' }}" title="Faltas">
+  <i class="fa-solid fa-user-slash"></i><span class="nav-label">Faltas</span>
+</a>
+<a href="{{ url_for('admin.justificacoes') }}" class="{{ 'active' if ep == 'admin.justificacoes' }}" title="Justificações">
+  <i class="fa-solid fa-file-circle-check"></i><span class="nav-label">Justificações</span>
+</a>
+<a href="{{ url_for('admin.ferias_admin') }}" class="{{ 'active' if ep == 'admin.ferias_admin' }}" title="Férias">
+  <i class="fa-solid fa-umbrella-beach"></i><span class="nav-label">Férias</span>
+</a>
+<a href="{{ url_for('admin.salarios') }}" class="{{ 'active' if ep == 'admin.salarios' }}" title="Salários">
+  <i class="fa-solid fa-money-bill-wave"></i><span class="nav-label">Salários</span>
+</a>
+<a href="{{ url_for('admin.estatisticas') }}" class="{{ 'active' if ep == 'admin.estatisticas' }}" title="Estatísticas">
+  <i class="fa-solid fa-chart-pie"></i><span class="nav-label">Estatísticas</span>
+</a>
+<a href="{{ url_for('admin.departamentos') }}" class="{{ 'active' if ep == 'admin.departamentos' }}" title="Departamentos">
+  <i class="fa-solid fa-sitemap"></i><span class="nav-label">Departamentos</span>
+</a>
+<div class="nav-sep"></div>
+<a href="{{ url_for('kiosk.index') }}" target="_blank" title="Abrir Kiosk">
+  <i class="fa-solid fa-display"></i><span class="nav-label">Abrir Kiosk</span>
+</a>

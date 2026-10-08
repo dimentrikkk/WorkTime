@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{% block title %}workforce-intelligence{% endblock %}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}layout-app{% endblock %}">
+  {% block layout %}
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-icon" title="WorkFace">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="WorkFace" class="brand-logo">
+      </div>
+      <div class="brand-text">
+        <strong>WorkFace</strong>
+        <em>Attendance</em>
+      </div>
+    </div>
+
+    <nav class="nav">
+      {% block nav %}{% endblock %}
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="user-card">
+        {% if current_avatar %}
+          <img class="sc-avatar sc-avatar-img" src="{{ url_for('employee.uploads', filename=current_avatar) if current_user_type == 'funcionario' else url_for('admin.uploads', filename=current_avatar) }}" alt="">
+        {% else %}
+          <div class="sc-avatar">{{ (current_user_name or '?')[:1] | upper }}</div>
+        {% endif %}
+        <div class="user-info">
+          <strong>{{ current_user_name or '—' }}</strong>
+          <span>{{ current_user_type or '' }}</span>
+        </div>
+      </div>
+      <a class="nav-logout" href="{{ url_for('auth.logout') }}" title="Sair">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <span class="nav-label">Sair</span>
+      </a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-title">
+        <h1>{% block page_title %}{% endblock %}</h1>
+        <p class="muted">{% block page_subtitle %}{% endblock %}</p>
+      </div>
+      <div class="topbar-actions">
+        {% if current_user_type %}
+          <a class="bell" href="{{ url_for('admin.notificacoes') if current_user_type == 'admin' else url_for('employee.notificacoes') }}" title="Notificações">
+            <i class="fa-solid fa-bell"></i>
+            {% if unread_notifs and unread_notifs > 0 %}
+              <span class="bell-badge">{{ unread_notifs if unread_notifs < 100 else '99+' }}</span>
+            {% endif %}
+          </a>
+        {% endif %}
+        {% block page_actions %}{% endblock %}
+      </div>
+    </header>
+    <div class="flash-area">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in messages %}
+          <div class="flash flash-{{ cat }}">{{ msg }}</div>
+        {% endfor %}
+      {% endwith %}
+    </div>
+    <div class="content">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+  {% endblock %}
+  {% block scripts %}{% endblock %}
+  <script>
+  /* Flash messages auto-dismiss */
+  setTimeout(() => {
+    document.querySelectorAll('.flash').forEach(el => {
+      el.style.transition = 'opacity .4s';
+      el.style.opacity = '0';
+      setTimeout(() => el.remove(), 420);
+    });
+  }, 4000);
+  </script>
+</body>
+</html>

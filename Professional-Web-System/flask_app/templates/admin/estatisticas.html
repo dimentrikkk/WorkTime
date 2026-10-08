@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Estatísticas{% endblock %}
+{% block nav %}{% include "_admin_nav.html" %}{% endblock %}
+{% block page_title %}Estatísticas{% endblock %}
+{% block page_subtitle %}Análise de presenças, horas e faltas{% endblock %}
+{% block content %}
+<div class="grid two-col">
+  <div class="card">
+    <header><h3><i class="fa-solid fa-chart-area"></i> Presenças (30 dias)</h3></header>
+    <canvas id="c1" height="120"></canvas>
+  </div>
+  <div class="card">
+    <header><h3><i class="fa-solid fa-chart-pie"></i> Funcionários por cargo</h3></header>
+    <canvas id="c2" height="120"></canvas>
+  </div>
+  <div class="card">
+    <header><h3><i class="fa-solid fa-ranking-star"></i> Horas trabalhadas no mês</h3></header>
+    <canvas id="c3" height="160"></canvas>
+  </div>
+  <div class="card">
+    <header><h3><i class="fa-solid fa-user-slash"></i> Faltas por cargo (ano)</h3></header>
+    <canvas id="c4" height="160"></canvas>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const presencas = {{ presencas_30d | tojson }};
+const cargos = {{ cargos_count | map(attribute='cargo') | list | tojson }};
+const cargosCount = {{ cargos_count | map(attribute='c') | list | tojson }};
+const horas = {{ horas_por_func | map(attribute='nome_completo') | list | tojson }};
+const horasMin = {{ horas_por_func | map(attribute='minutos') | list | tojson }};
+const fc = {{ faltas_por_cargo | map(attribute='cargo') | list | tojson }};
+const fcCount = {{ faltas_por_cargo | map(attribute='c') | list | tojson }};
+
+new Chart(document.getElementById('c1'), {
+  type: 'line',
+  data: {
+    labels: presencas.map(p => p.data.slice(5)),
+    datasets: [{ label: 'Presenças', data: presencas.map(p => p.presencas), borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.15)', fill: true, tension: .3 }]
+  },
+  options: { plugins: { legend: { display: false } } }
+});
+new Chart(document.getElementById('c2'), {
+  type: 'doughnut',
+  data: { labels: cargos, datasets: [{ data: cargosCount, backgroundColor: ['#6366f1','#22c55e','#f59e0b','#ef4444','#0ea5e9'] }] },
+  options: { plugins: { legend: { position: 'bottom' } } }
+});
+new Chart(document.getElementById('c3'), {
+  type: 'bar',
+  data: { labels: horas, datasets: [{ label: 'Minutos', data: horasMin, backgroundColor: '#22c55e' }] },
+  options: { indexAxis: 'y', plugins: { legend: { display: false } } }
+});
+new Chart(document.getElementById('c4'), {
+  type: 'bar',
+  data: { labels: fc, datasets: [{ label: 'Faltas', data: fcCount, backgroundColor: '#ef4444' }] },
+  options: { plugins: { legend: { display: false } } }
+});
+</script>
+{% endblock %}

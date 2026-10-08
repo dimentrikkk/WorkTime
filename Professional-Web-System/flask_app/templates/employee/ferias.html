@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Férias{% endblock %}
+{% block nav %}{% include "_employee_nav.html" %}{% endblock %}
+{% block page_title %}Férias{% endblock %}
+{% block page_subtitle %}Saldo do ano e pedidos de férias{% endblock %}
+{% block content %}
+
+<div class="grid kpi">
+  <div class="kpi-card">
+    <span class="kpi-label">Total {{ balance.year }}</span>
+    <strong>{{ balance.total }} dias</strong>
+    <i class="fa-solid fa-calendar kpi-icon"></i>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-label">Já gozados</span>
+    <strong>{{ balance.used }} dias</strong>
+    <i class="fa-solid fa-plane kpi-icon"></i>
+  </div>
+  <div class="kpi-card">
+    <span class="kpi-label">Restantes</span>
+    <strong>{{ balance.remaining }} dias</strong>
+    <i class="fa-solid fa-umbrella-beach kpi-icon"></i>
+  </div>
+</div>
+
+<form method="post" class="card form">
+  <header><h3><i class="fa-solid fa-calendar-plus"></i> Pedido de férias</h3></header>
+  <div class="grid two-col">
+    <label>Data de início *
+      <input type="date" name="data_inicio" required>
+    </label>
+    <label>Data de fim *
+      <input type="date" name="data_fim" required>
+    </label>
+    <label class="full">Motivo (opcional)
+      <textarea name="motivo" rows="2" placeholder="Ex.: viagem em família..."></textarea>
+    </label>
+  </div>
+  <div class="actions-row">
+    <button class="btn primary" type="submit"><i class="fa-solid fa-paper-plane"></i> Submeter pedido</button>
+  </div>
+  <p class="muted small"><i class="fa-solid fa-circle-info"></i> Apenas dias úteis são contabilizados.</p>
+</form>
+
+<div class="card">
+  <header><h3><i class="fa-solid fa-list-check"></i> Os meus pedidos</h3></header>
+  <table class="data">
+    <thead><tr><th>Período</th><th>Dias</th><th>Estado</th><th>Resposta</th><th>Submetido</th></tr></thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td>{{ r.data_inicio }} → {{ r.data_fim }}</td>
+        <td>{{ r.dias }}</td>
+        <td>
+          {% if r.estado == 'aprovado' %}<span class="badge in">Aprovado</span>
+          {% elif r.estado == 'rejeitado' %}<span class="badge out">Rejeitado</span>
+          {% else %}<span class="badge warn">Pendente</span>{% endif %}
+        </td>
+        <td>{{ r.resposta_admin or '—' }}</td>
+        <td class="muted small">{{ r.created_at }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="muted center">Sem pedidos.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

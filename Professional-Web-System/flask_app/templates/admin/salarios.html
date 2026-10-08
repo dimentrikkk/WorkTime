@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Salários{% endblock %}
+{% block nav %}{% include "_admin_nav.html" %}{% endblock %}
+{% block page_title %}Salários{% endblock %}
+{% block page_subtitle %}Cálculo automático com base nas horas, atrasos e faltas{% endblock %}
+{% block content %}
+<form method="get" class="filters card">
+  <label>Mês
+    <input type="number" name="mes" min="1" max="12" value="{{ month }}">
+  </label>
+  <label>Ano
+    <input type="number" name="ano" min="2020" max="2100" value="{{ year }}">
+  </label>
+  <button class="btn primary"><i class="fa-solid fa-magnifying-glass"></i> Calcular</button>
+  <form method="post" style="display:inline">
+    <input type="hidden" name="action" value="process_all">
+    <input type="hidden" name="mes" value="{{ month }}">
+    <input type="hidden" name="ano" value="{{ year }}">
+    <button class="btn ghost"><i class="fa-solid fa-download"></i> Processar e gravar</button>
+  </form>
+</form>
+
+<div class="card">
+  <header>
+    <h3>Resumo do mês {{ '%02d/%d' | format(month, year) }}</h3>
+    <strong>Total líquido: {{ '%.2f' | format(total_liquido) }} €</strong>
+  </header>
+  <table class="data">
+    <thead>
+      <tr>
+        <th>Funcionário</th><th>Cargo</th><th>€/h</th>
+        <th>Horas</th><th>Bruto</th><th>Atrasos</th><th>Faltas</th><th>Descontos</th><th>Líquido</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td>{{ r.func.nome_completo }}</td>
+        <td><span class="chip chip-{{ r.func.cargo }}">{{ r.func.cargo }}</span></td>
+        <td>{{ '%.2f' | format(r.func.salario_hora) }}</td>
+        <td>{{ '%.2f' | format(r.info.total_horas) }} h</td>
+        <td>{{ '%.2f' | format(r.info.salario_bruto) }} €</td>
+        <td>{{ r.info.atraso_minutos }} min</td>
+        <td>{{ r.info.faltas }}</td>
+        <td>−{{ '%.2f' | format(r.info.descontos) }} €</td>
+        <td><strong>{{ '%.2f' | format(r.info.salario_liquido) }} €</strong></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="9" class="muted center">Sem funcionários.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

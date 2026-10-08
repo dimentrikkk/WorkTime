@@ -1,0 +1,192 @@
+Quero desenvolver ou evoluir um sistema web profissional de controlo de ponto com reconhecimento facial para uma empresa de bebidas.
+
+O sistema já existe parcialmente, mas deve ser reestruturado, modernizado e elevado a nível profissional (PAP / sistema real de empresa).
+
+🧠 CONTEXTO DO NEGÓCIO
+
+A empresa possui 4 funções principais:
+
+Armazém
+Camionistas
+Vendedores
+Secretárias
+
+O sistema deve suportar gestão completa de funcionários e controlo de presença por reconhecimento facial.
+
+⚙️ STACK OBRIGATÓRIO (NÃO ALTERAR)
+Backend: Python (Flask)
+Base de dados: SQLite
+Reconhecimento facial: face_recognition + OpenCV
+Frontend: HTML + CSS + Jinja templates
+🧩 ARQUITETURA DO SISTEMA
+
+O sistema deve ser dividido em 3 partes:
+
+📱 1. MODO KIOSK (TABLET NA PAREDE)
+
+Sistema simples de entrada/saída com reconhecimento facial.
+
+🧑‍💻 2. APP FUNCIONÁRIO
+
+Portal para cada funcionário consultar os seus dados.
+
+🧑‍💼 3. PAINEL ADMIN
+
+Sistema completo de gestão da empresa.
+
+👤 1. SISTEMA DE UTILIZADORES
+Login obrigatório
+Tipos de utilizador:
+admin
+funcionário
+Autenticação segura com password hash (bcrypt ou equivalente)
+Sessões Flask seguras
+🧑‍💼 2. REGISTO DE FUNCIONÁRIOS (ADMIN)
+
+O admin pode criar funcionários com:
+
+Nome completo
+Idade
+Email
+Morada
+Cidade
+Cargo:
+armazém
+camionista
+vendedor
+secretária
+Departamento
+Salário por hora
+Password de acesso
+ID único automático
+📸 3. RECONHECIMENTO FACIAL
+
+Durante o registo do funcionário:
+
+Capturar 3 a 5 imagens do rosto via webcam
+Gerar encoding facial com face_recognition
+Guardar encoding na base de dados SQLite
+Usar para:
+entrada
+saída
+identificação automática no sistema
+🕒 4. SISTEMA DE PONTO
+
+O sistema deve registar automaticamente:
+
+Entrada
+Saída
+
+E calcular:
+
+tempo total trabalhado
+horas diárias e mensais
+atrasos
+faltas
+📊 5. HORÁRIOS
+
+O admin pode:
+
+Criar horários por funcionário
+Definir:
+dia da semana
+hora de entrada
+hora de saída
+
+O funcionário pode:
+
+consultar o seu horário semanal
+💰 6. SALÁRIOS
+
+O sistema deve calcular automaticamente:
+
+salário por hora
+total de horas trabalhadas
+descontos por:
+faltas
+atrasos
+penalizações
+salário líquido final
+📂 7. BASE DE DADOS (SQLite)
+
+Deve incluir pelo menos:
+
+funcionarios
+admins
+registos_ponto
+sessoes_trabalho
+horarios
+faltas
+salarios
+departamentos
+🧑‍💻 8. PAINEL FUNCIONÁRIO
+
+Cada funcionário pode ver:
+
+Dados pessoais
+Registos de entrada/saída
+Horário semanal
+Salário detalhado
+Faltas e atrasos
+
+❌ Sem permissões de edição
+
+🧑‍💼 9. PAINEL ADMIN
+
+O admin pode:
+
+Criar / editar / remover funcionários
+Gerir horários
+Ver registos de ponto
+Ver salários
+Monitorizar faltas e atrasos
+Ver estatísticas e gráficos:
+presenças
+faltas
+salários
+📱 10. MODO KIOSK (TABLET)
+
+Criar uma interface dedicada:
+
+Página fullscreen simples
+Botões:
+ENTRAR
+SAIR
+Webcam ativa
+Reconhecimento facial automático
+Feedback visual imediato:
+“Entrada registada”
+“Saída registada”
+foto do utilizador reconhecido
+Reset automático após 3–5 segundos
+🎨 11. UI/UX
+Design moderno estilo SaaS
+Dashboard limpo e profissional
+Sidebar de navegação
+Cards com estatísticas
+Ícones (FontAwesome)
+Totalmente responsivo (desktop + tablet)
+🔐 12. SEGURANÇA
+Password hashing seguro
+Proteção de rotas (admin/funcionário)
+Validação de inputs
+Sessões seguras Flask
+Acesso restrito por tipo de utilizador
+🧠 OBJETIVO FINAL
+
+Criar um sistema que:
+
+seja funcional e robusto
+pareça um produto real de empresa
+tenha qualidade de software profissional
+seja adequado para apresentação de PAP (nota máxima)
+combine backend sólido + UI moderna + reconhecimento facial real
+🚀 EXTRA IMPORTANTE (REQUISITO DE QUALIDADE)
+
+O sistema deve ser:
+
+modular
+escalável
+organizado por camadas (routes, services, models)
+fácil de manter
+com código limpo e reutilizável

@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Kiosk · WorkFace</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body class="layout-kiosk">
+  <header class="kiosk-top">
+    <div class="kiosk-brand">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="WorkFace" class="kiosk-logo">
+    </div>
+    <div class="clock">
+      <span id="clock">--:--:--</span>
+      <small id="date"></small>
+    </div>
+    <a class="btn ghost light" href="{{ url_for('auth.login') }}"><i class="fa-solid fa-right-to-bracket"></i> Painel</a>
+  </header>
+
+  <!-- ===== Screen 1: choose action ===== -->
+  <main id="screenChoose" class="kiosk-screen">
+    <div class="kiosk-hero">
+      <h1>Bem-vindo</h1>
+      <p>Selecione a ação que pretende registar</p>
+    </div>
+    <div class="kiosk-actions">
+      <button class="action-btn entrada" data-tipo="entrada">
+        <div class="action-icon"><i class="fa-solid fa-arrow-right-to-bracket"></i></div>
+        <strong>ENTRADA</strong>
+        <span>Iniciar turno de trabalho</span>
+      </button>
+      <button class="action-btn saida" data-tipo="saida">
+        <div class="action-icon"><i class="fa-solid fa-arrow-right-from-bracket"></i></div>
+        <strong>SAÍDA</strong>
+        <span>Terminar turno de trabalho</span>
+      </button>
+    </div>
+  </main>
+
+  <!-- ===== Screen 2: face scan ===== -->
+  <main id="screenScan" class="kiosk-screen hidden">
+    <header class="scan-head">
+      <span id="scanLabel" class="scan-label">Registar entrada</span>
+      <button id="btnCancel" class="btn ghost light"><i class="fa-solid fa-xmark"></i> Cancelar</button>
+    </header>
+    <div class="kiosk-cam">
+      <video id="video" autoplay muted playsinline></video>
+      <canvas id="canvas" style="display:none"></canvas>
+      <div class="scan-frame"></div>
+      <div id="overlay" class="overlay"></div>
+    </div>
+    <div class="scan-foot">
+      <p id="scanHint">Posicione o rosto no centro e mantenha-se imóvel.</p>
+      <button id="btnPunch" class="btn primary big"><i class="fa-solid fa-camera"></i> Confirmar identificação</button>
+    </div>
+  </main>
+
+  <script>
+  // ============== Elements ==============
+  const screenChoose = document.getElementById('screenChoose');
+  const screenScan = document.getElementById('screenScan');
+  const scanLabel = document.getElementById('scanLabel');
+  const scanHint = document.getElementById('scanHint');
+  const video = document.getElementById('video');
+  const canvas = document.getElementById('canvas');
+  const overlay = document.getElementById('overlay');
+  const btnPunch = document.getElementById('btnPunch');
+  const btnCancel = document.getElementById('btnCancel');
+  const clockEl = document.getElementById('clock');
+  const dateEl = document.getElementById('date');
+
+  let mediaStream = null;
+  let currentTipo = null;
+  let returnTimer = null;
+
+  // ============== Clock ==============
+  function tickClock() {
+    const d = new Date();
+    clockEl.textContent = d.toLocaleTimeString('pt-PT');
+    dateEl.textContent = d.toLocaleDateString('pt-PT', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+  }
+  setInterval(tickClock, 1000); tickClock();
+
+  // ============== Camera lifecycle ==============
+  async function startCamera() {
+    if (mediaStream) return;
+    try {
+      mediaStream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } });
+      video.srcObject = mediaStream;
+    } catch (err) {
+      showOverlay('error', `<div class="ok-card"><i class="fa-solid fa-camera-slash"></i><h2>Sem acesso à câmara</h2><p class="meta">${err.message}</p></div>`, false);
+    }
+  }
+  function stopCamera() {
+    if (!mediaStream) return;
+    mediaStream.getTracks().forEach(t => t.stop());
+    mediaStream = null;
+    video.srcObject = null;
+  }
+
+  // ============== Screen switching ==============
+  function showChoose() {
+    if (returnTimer) { clearTimeout(returnTimer); returnTimer = null; }
+    overlay.className = 'overlay';
+    overlay.innerHTML = '';
+    stopCamera();
+    screenScan.classList.add('hidden');
+    screenChoose.classList.remove('hidden');
+    btnPunch.disabled = false;
+    btnPunch.innerHTML = '<i class="fa-solid fa-camera"></i> Confirmar identificação';
+  }
+
+  function showScan(tipo) {
+    currentTipo = tipo;
+    const isIn = tipo === 'entrada';
+    scanLabel.textContent = isIn ? 'Registar ENTRADA' : 'Registar SAÍDA';
+    scanLabel.className = 'scan-label ' + (isIn ? 'in' : 'out');
+    scanHint.textContent = 'Posicione o rosto dentro da moldura e mantenha-se imóvel.';
+    overlay.className = 'overlay';
+    overlay.innerHTML = '';
+    screenChoose.classList.add('hidden');
+    screenScan.classList.remove('hidden');
+    startCamera();
+  }
+
+  // ============== Overlays ==============
+  function showOverlay(type, html, autoReturn = true) {
+    overlay.className = 'overlay show ' + type;
+    overlay.innerHTML = html;
+    if (autoReturn) {
+      if (returnTimer) clearTimeout(returnTimer);
+      returnTimer = setTimeout(showChoose, 4500);
+    }
+  }
+
+  // ============== Audio cue ==============
+  let audioCtx = null;
+  function beep(ok) {
+    try {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      const tones = ok ? [880, 1320] : [220, 165];
+      tones.forEach((f, i) => {
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.frequency.value = f;
+        o.type = ok ? 'sine' : 'square';
+        g.gain.setValueAtTime(0, audioCtx.currentTime + i * 0.15);
+        g.gain.linearRampToValueAtTime(0.18, audioCtx.currentTime + i * 0.15 + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + i * 0.15 + 0.22);
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start(audioCtx.currentTime + i * 0.15);
+        o.stop(audioCtx.currentTime + i * 0.15 + 0.25);
+      });
+    } catch (_) {}
+  }
+
+  // ============== Punch action ==============
+  async function punch() {
+    if (!video.videoWidth) return;
+    btnPunch.disabled = true;
+    btnPunch.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> A identificar...';
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+    try {
+      const r = await fetch('/kiosk/recognize', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ image: dataUrl, tipo: currentTipo }),
+      });
+      const data = await r.json();
+      if (data.ok) {
+        const isIn = data.tipo === 'entrada';
+        beep(true);
+        showOverlay('success', `
+          <div class="ok-card">
+            <i class="fa-solid ${isIn ? 'fa-arrow-right-to-bracket' : 'fa-arrow-right-from-bracket'}"></i>
+            <h2>${isIn ? 'Entrada registada' : 'Saída registada'}</h2>
+            <p class="who">${data.funcionario.nome}</p>
+            <p class="meta">${data.funcionario.cargo} · ${new Date(data.timestamp).toLocaleTimeString('pt-PT')}</p>
+            ${!isIn && data.total_formatado ? `<p class="meta">Sessão: ${data.total_formatado}</p>` : ''}
+            ${isIn && data.atraso_minutos ? `<p class="meta warn">Atraso: ${data.atraso_minutos} min</p>` : ''}
+          </div>
+        `);
+      } else {
+        beep(false);
+        const who = data.funcionario ? `<p class="who">${data.funcionario.nome}</p>` : '';
+        showOverlay('error', `<div class="ok-card"><i class="fa-solid fa-triangle-exclamation"></i><h2>${data.error}</h2>${who}</div>`);
+      }
+    } catch (e) {
+      beep(false);
+      showOverlay('error', `<div class="ok-card"><i class="fa-solid fa-wifi"></i><h2>Erro de rede</h2><p class="meta">${e.message}</p></div>`);
+    } finally {
+      btnPunch.disabled = false;
+      btnPunch.innerHTML = '<i class="fa-solid fa-camera"></i> Confirmar identificação';
+    }
+  }
+
+  // ============== Wire up ==============
+  document.querySelectorAll('.action-btn').forEach(btn => {
+    btn.addEventListener('click', () => showScan(btn.dataset.tipo));
+  });
+  btnCancel.addEventListener('click', showChoose);
+  btnPunch.addEventListener('click', punch);
+  </script>
+</body>
+</html>

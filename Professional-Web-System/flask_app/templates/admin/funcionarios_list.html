@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Funcionários{% endblock %}
+{% block nav %}{% include "_admin_nav.html" %}{% endblock %}
+{% block page_title %}Funcionários{% endblock %}
+{% block page_subtitle %}Gestão de equipas, contratos e reconhecimento facial{% endblock %}
+{% block page_actions %}
+<a class="btn primary" href="{{ url_for('admin.funcionarios_new') }}"><i class="fa-solid fa-plus"></i> Novo funcionário</a>
+{% endblock %}
+{% block content %}
+<form method="get" class="filters card">
+  <input type="search" name="q" value="{{ q }}" placeholder="Procurar por nome ou email...">
+  <select name="cargo">
+    <option value="">Todos os cargos</option>
+    {% for c, label in cargos %}
+      <option value="{{ c }}" {{ 'selected' if cargo == c }}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <button class="btn primary"><i class="fa-solid fa-filter"></i> Filtrar</button>
+</form>
+
+<div class="card">
+  <div class="table-wrap">
+    <table class="data compact">
+      <thead>
+        <tr>
+          <th style="width:54px"></th>
+          <th>Nome</th>
+          <th>Cargo</th>
+          <th class="hide-md">Departamento</th>
+          <th class="hide-sm">Email</th>
+          <th class="hide-md">Salário/h</th>
+          <th>Face</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+        <tr>
+          <td>
+            {% if r.foto_perfil %}
+              <img class="row-avatar" src="{{ url_for('admin.uploads', filename=r.foto_perfil) }}" alt="">
+            {% else %}
+              <div class="row-avatar placeholder">{{ r.nome_completo[:1] | upper }}</div>
+            {% endif %}
+          </td>
+          <td>
+            <strong>{{ r.nome_completo }}</strong>
+            <div class="muted small">#{{ r.id }} · {{ r.email }}</div>
+          </td>
+          <td><span class="chip chip-{{ r.cargo }}">{{ r.cargo }}</span></td>
+          <td class="hide-md">{{ r.departamento_nome or '—' }}</td>
+          <td class="hide-sm">{{ r.email }}</td>
+          <td class="hide-md">{{ '%.2f' | format(r.salario_hora) }} €</td>
+          <td>
+            {% if r.amostras_face >= 3 %}
+              <span class="badge in">{{ r.amostras_face }}</span>
+            {% elif r.amostras_face > 0 %}
+              <span class="badge warn">{{ r.amostras_face }}</span>
+            {% else %}
+              <span class="badge out">0</span>
+            {% endif %}
+          </td>
+          <td>{% if r.ativo %}<span class="badge in">Ativo</span>{% else %}<span class="badge out">Inativo</span>{% endif %}</td>
+          <td class="actions">
+            <a class="btn ghost icon" title="Editar" href="{{ url_for('admin.funcionarios_edit', fid=r.id) }}"><i class="fa-solid fa-pen"></i></a>
+            <a class="btn ghost icon" title="Captura facial" href="{{ url_for('admin.funcionarios_face', fid=r.id) }}"><i class="fa-solid fa-camera"></i></a>
+            <form method="post" action="{{ url_for('admin.funcionarios_delete', fid=r.id) }}" onsubmit="return confirm('Remover este funcionário?');" style="display:inline">
+              <button class="btn danger icon" title="Remover"><i class="fa-solid fa-trash"></i></button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" class="muted center">Sem funcionários registados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

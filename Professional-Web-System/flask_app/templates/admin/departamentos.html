@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Departamentos{% endblock %}
+{% block nav %}{% include "_admin_nav.html" %}{% endblock %}
+{% block page_title %}Departamentos{% endblock %}
+{% block page_subtitle %}Estrutura organizacional{% endblock %}
+{% block content %}
+<form method="post" class="card form grid two-col">
+  <input type="hidden" name="action" value="create">
+  <label>Nome
+    <input type="text" name="nome" required>
+  </label>
+  <label>Descrição
+    <input type="text" name="descricao">
+  </label>
+  <div class="full actions-row">
+    <button class="btn primary"><i class="fa-solid fa-plus"></i> Criar departamento</button>
+  </div>
+</form>
+
+<div class="card">
+  <table class="data">
+    <thead><tr><th>Nome</th><th>Descrição</th><th>Funcionários</th><th></th></tr></thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td><strong>{{ r.nome }}</strong></td>
+        <td>{{ r.descricao or '—' }}</td>
+        <td>{{ r.num_funcionarios }}</td>
+        <td>
+          <form method="post" style="display:inline" onsubmit="return confirm('Remover?');">
+            <input type="hidden" name="action" value="delete">
+            <input type="hidden" name="id" value="{{ r.id }}">
+            <button class="btn danger small ghost"><i class="fa-solid fa-trash"></i></button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

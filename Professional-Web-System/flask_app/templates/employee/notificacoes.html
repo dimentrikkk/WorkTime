@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Notificações{% endblock %}
+{% block nav %}{% include "_employee_nav.html" %}{% endblock %}
+{% block page_title %}Notificações{% endblock %}
+{% block page_subtitle %}As suas mensagens e alertas{% endblock %}
+{% block content %}
+<div class="card">
+  {% if rows %}
+    <ul class="notif-list">
+      {% for n in rows %}
+      <li class="notif notif-{{ n.tipo }}">
+        <strong>{{ n.titulo }}</strong>
+        <p>{{ n.mensagem }}</p>
+        <time class="muted small">{{ n.created_at }}</time>
+      </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted center">Sem notificações.</p>
+  {% endif %}
+</div>
+{% endblock %}

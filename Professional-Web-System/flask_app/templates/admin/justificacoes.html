@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Justificações de Falta{% endblock %}
+{% block nav %}{% include "_admin_nav.html" %}{% endblock %}
+{% block page_title %}Pedidos de Justificação{% endblock %}
+{% block page_subtitle %}Aprove ou rejeite os pedidos de justificação dos funcionários{% endblock %}
+{% block content %}
+
+<div class="card">
+  <table class="data">
+    <thead>
+      <tr><th>Funcionário</th><th>Período</th><th>Motivo</th><th>Estado</th><th>Resposta</th><th>Submetido</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td><strong>{{ r.nome_completo }}</strong><br><span class="chip chip-{{ r.cargo }}">{{ r.cargo }}</span></td>
+        <td>{{ r.data_inicio }}{% if r.data_fim != r.data_inicio %} → {{ r.data_fim }}{% endif %}</td>
+        <td>{{ r.motivo }}</td>
+        <td>
+          {% if r.estado == 'aprovado' %}<span class="badge in">Aprovado</span>
+          {% elif r.estado == 'rejeitado' %}<span class="badge out">Rejeitado</span>
+          {% else %}<span class="badge warn">Pendente</span>{% endif %}
+        </td>
+        <td>{{ r.resposta_admin or '—' }}</td>
+        <td class="muted small">{{ r.created_at }}</td>
+        <td class="actions">
+          {% if r.estado == 'pendente' %}
+          <details class="popmenu">
+            <summary class="btn primary small">Decidir</summary>
+            <form method="post" class="popform">
+              <input type="hidden" name="id" value="{{ r.id }}">
+              <textarea name="resposta" rows="2" placeholder="Resposta opcional"></textarea>
+              <div class="actions-row">
+                <button class="btn success small" name="decisao" value="aprovado"><i class="fa-solid fa-check"></i> Aprovar</button>
+                <button class="btn danger small" name="decisao" value="rejeitado"><i class="fa-solid fa-xmark"></i> Rejeitar</button>
+              </div>
+            </form>
+          </details>
+          {% else %}
+          <span class="muted small">—</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" class="muted center">Não existem pedidos.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}O Meu Perfil{% endblock %}
+{% block nav %}{% include "_employee_nav.html" %}{% endblock %}
+{% block page_title %}O Meu Perfil{% endblock %}
+{% block page_subtitle %}Foto, dados e password{% endblock %}
+{% block content %}
+
+<div class="grid two-col">
+  <section class="card">
+    <header><h3><i class="fa-solid fa-image-portrait"></i> Foto de perfil</h3></header>
+    <div class="profile-photo-edit">
+      {% if func.foto_perfil %}
+        <img class="big-avatar" src="{{ url_for('employee.uploads', filename=func.foto_perfil) }}" alt="">
+      {% else %}
+        <div class="big-avatar placeholder">{{ func.nome_completo[:1] | upper }}</div>
+      {% endif %}
+      <form method="post">
+        <input type="hidden" name="action" value="foto">
+        <input type="hidden" name="foto_data" id="foto_data">
+        <label>Selecionar imagem (PNG/JPG)
+          <input type="file" id="avatarFile" accept="image/*">
+        </label>
+        <button type="submit" class="btn primary"><i class="fa-solid fa-upload"></i> Carregar foto</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="card">
+    <header><h3><i class="fa-solid fa-key"></i> Alterar password</h3></header>
+    <form method="post">
+      <input type="hidden" name="action" value="password">
+      <label>Password atual <input type="password" name="atual" required></label>
+      <label>Nova password (mín. 6) <input type="password" name="nova" required minlength="6"></label>
+      <button type="submit" class="btn primary"><i class="fa-solid fa-lock"></i> Atualizar password</button>
+    </form>
+  </section>
+</div>
+
+<section class="card">
+  <header><h3><i class="fa-solid fa-id-card"></i> Os meus dados</h3></header>
+  <dl class="info-list two">
+    <dt>Nome</dt><dd>{{ func.nome_completo }}</dd>
+    <dt>Email</dt><dd>{{ func.email }}</dd>
+    <dt>Telefone</dt><dd>{{ func.telefone or '—' }}</dd>
+    <dt>NIF</dt><dd>{{ func.nif or '—' }}</dd>
+    <dt>Cargo</dt><dd>{{ func.cargo }}</dd>
+    <dt>Departamento</dt><dd>{{ func.departamento_nome or '—' }}</dd>
+    <dt>Morada</dt><dd>{{ func.morada or '—' }} {{ func.cidade or '' }}</dd>
+    <dt>Admissão</dt><dd>{{ func.data_admissao or '—' }}</dd>
+  </dl>
+  <p class="muted small">Para alterar dados pessoais, contacte o departamento de recursos humanos.</p>
+</section>
+
+<script>
+document.getElementById('avatarFile')?.addEventListener('change', (e) => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => document.getElementById('foto_data').value = r.result;
+  r.readAsDataURL(f);
+});
+</script>
+{% endblock %}

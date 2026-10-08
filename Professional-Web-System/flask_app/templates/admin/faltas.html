@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Faltas{% endblock %}
+{% block nav %}{% include "_admin_nav.html" %}{% endblock %}
+{% block page_title %}Faltas{% endblock %}
+{% block page_subtitle %}Registo e justificação de faltas{% endblock %}
+{% block content %}
+<form method="post" class="card form grid two-col">
+  <input type="hidden" name="action" value="create">
+  <label>Funcionário
+    <select name="funcionario_id" required>
+      {% for f in funcionarios %}
+        <option value="{{ f.id }}">{{ f.nome_completo }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>Data
+    <input type="date" name="data" required>
+  </label>
+  <label class="full">Motivo
+    <input type="text" name="motivo" placeholder="Doença, formação, ...">
+  </label>
+  <label class="check"><input type="checkbox" name="justificada"> Justificada</label>
+  <div class="full actions-row">
+    <button class="btn primary"><i class="fa-solid fa-plus"></i> Registar falta</button>
+  </div>
+</form>
+
+<div class="card">
+  <table class="data">
+    <thead><tr><th>Funcionário</th><th>Data</th><th>Justificada</th><th>Motivo</th><th></th></tr></thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td>{{ r.nome_completo }}</td>
+        <td>{{ r.data }}</td>
+        <td>{% if r.justificada %}<span class="badge in">Sim</span>{% else %}<span class="badge out">Não</span>{% endif %}</td>
+        <td>{{ r.motivo or '—' }}</td>
+        <td>
+          <form method="post" style="display:inline" onsubmit="return confirm('Remover falta?');">
+            <input type="hidden" name="action" value="delete">
+            <input type="hidden" name="id" value="{{ r.id }}">
+            <button class="btn ghost danger small"><i class="fa-solid fa-trash"></i></button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="muted center">Sem faltas registadas.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

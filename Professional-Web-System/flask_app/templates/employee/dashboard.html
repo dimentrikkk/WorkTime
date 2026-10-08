@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Funcionário{% endblock %}
+{% block nav %}{% include "_employee_nav.html" %}{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}Resumo da sua atividade este mês{% endblock %}
+
+{% block content %}
+
+<!-- ── Hero banner ── -->
+<div class="hero-banner">
+  <div class="hero-photo">
+    {% if func.foto_perfil %}
+      <img src="{{ url_for('employee.uploads', filename=func.foto_perfil) }}" alt="{{ func.nome_completo }}">
+    {% else %}
+      <div class="hero-initials">{{ func.nome_completo[:1] | upper }}</div>
+    {% endif %}
+  </div>
+  <div class="hero-info">
+    <h2>Olá, {{ func.nome_completo.split(' ')[0] }} 👋</h2>
+    <div class="hero-sub">
+      <span class="chip chip-{{ func.cargo }}">{{ func.cargo }}</span>
+      <span class="muted">{{ func.departamento_nome or 'Sem departamento' }}</span>
+      <span class="muted">· {{ func.email }}</span>
+    </div>
+  </div>
+  <div class="hero-status">
+    {% if open_sess %}
+      <span class="badge in" style="font-size:.82rem;padding:7px 12px">
+        <span class="dot-live"></span> A trabalhar
+      </span>
+    {% else %}
+      <span class="badge out" style="font-size:.82rem;padding:7px 12px">
+        <i class="fa-solid fa-moon"></i> Fora
+      </span>
+    {% endif %}
+    <div style="margin-top:8px;text-align:right">
+      <a class="btn ghost" style="border-color:rgba(255,255,255,.2);color:#cbd5e1;font-size:.8rem"
+         href="{{ url_for('employee.perfil') }}">
+        <i class="fa-solid fa-camera"></i> Editar foto
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ── KPI strip ── -->
+<div class="grid kpi">
+  <div class="kpi-card kc-cyan">
+    <span class="kpi-label">Horas no mês</span>
+    <strong data-count="{{ horas_mes }}">{{ horas_mes }}</strong>
+    <i class="fa-solid fa-stopwatch kpi-icon"></i>
+  </div>
+  <div class="kpi-card kc-green">
+    <span class="kpi-label">Salário previsto</span>
+    <strong data-count="{{ '%.0f' | format(salario.salario_liquido) }}">{{ '%.2f' | format(salario.salario_liquido) }} €</strong>
+    <i class="fa-solid fa-money-bill-wave kpi-icon"></i>
+  </div>
+  <div class="kpi-card kc-red">
+    <span class="kpi-label">Faltas no mês</span>
+    <strong data-count="{{ salario.faltas }}">{{ salario.faltas }}</strong>
+    <i class="fa-solid fa-user-slash kpi-icon"></i>
+  </div>
+  <div class="kpi-card kc-purple">
+    <span class="kpi-label">Dias férias livres</span>
+    <strong data-count="{{ ferias.remaining }}">{{ ferias.remaining }}</strong>
+    <i class="fa-solid fa-umbrella-beach kpi-icon"></i>
+  </div>
+</div>
+
+<!-- ── Two-column: férias + notificações ── -->
+<div class="grid two-col">
+  <div class="card ferias-widget">
+    <header><h3><i class="fa-solid fa-umbrella-beach"></i> Férias {{ ferias.year }}</h3>
+      <a href="{{ url_for('employee.ferias') }}" class="btn ghost small">Pedir <i class="fa-solid fa-arrow-right"></i></a>
+    </header>
+    <div class="ferias-content">
+      <div class="ferias-ring" style="--p:{{ (ferias.remaining / ferias.total * 100) if ferias.total else 0 }}">
+        <div class="ferias-inner">
+          <strong>{{ ferias.remaining }}</strong>
+          <span>livres</span>
+        </div>
+      </div>
+      <ul class="ferias-list">
+        <li><span>Total no ano</span><strong>{{ ferias.total }}</strong></li>
+        <li><span>Já gozados</span><strong>{{ ferias.used }}</strong></li>
+        <li><span>Restantes</span><strong class="ok">{{ ferias.remaining }}</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <header>
+      <h3><i class="fa-solid fa-bell"></i> Notificações recentes</h3>
+      <a class="muted small" href="{{ url_for('employee.notificacoes') }}">Ver tudo →</a>
+    </header>
+    {% if notifs %}
+      <ul class="notif-list">
+        {% for n in notifs %}
+        <li class="notif notif-{{ n.tipo }} {{ 'unread' if not n.lida }}">
+          <strong>{{ n.titulo }}</strong>
+          <p>{{ n.mensagem }}</p>
+          <time class="muted small">{{ n.created_at }}</time>
+        </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted center" style="padding:24px 0">Sem notificações.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ── Two-column: dados + timeline ── -->
+<div class="grid two-col">
+  <div class="card">
+    <header><h3><i class="fa-solid fa-id-badge"></i> Os meus dados</h3></header>
+    <dl class="info-list">
+      <dt>Cargo</dt>       <dd><span class="chip chip-{{ func.cargo }}">{{ func.cargo }}</span></dd>
+      <dt>Departamento</dt><dd>{{ func.departamento_nome or '—' }}</dd>
+      <dt>Cidade</dt>      <dd>{{ func.cidade or '—' }}</dd>
+      <dt>Salário/hora</dt><dd>{{ '%.2f' | format(func.salario_hora) }} €</dd>
+      <dt>Contrato</dt>    <dd>{{ func.tipo_contrato or '—' }}</dd>
+      <dt>Admissão</dt>    <dd>{{ func.data_admissao or '—' }}</dd>
+    </dl>
+  </div>
+
+  <div class="card">
+    <header><h3><i class="fa-solid fa-clock-rotate-left"></i> Atividade recente</h3>
+      <a href="{{ url_for('employee.registos') }}" class="btn ghost small">Ver tudo</a>
+    </header>
+    {% if ultimos_registos %}
+    <div class="timeline">
+      {% for r in ultimos_registos %}
+      <div class="tl-item">
+        <div class="tl-dot {{ r.tipo }}">
+          {% if r.tipo == 'entrada' %}
+            <i class="fa-solid fa-arrow-right-to-bracket"></i>
+          {% else %}
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          {% endif %}
+        </div>
+        <div class="tl-body">
+          <strong>{% if r.tipo == 'entrada' %}Entrada{% else %}Saída{% endif %}</strong>
+          <time>{{ r.timestamp }}</time>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+      <p class="muted center" style="padding:24px 0">Sem registos ainda.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* KPI counter animation */
+document.querySelectorAll('.kpi-card strong[data-count]').forEach(el => {
+  const raw = el.dataset.count.trim();
+  const num = parseFloat(raw.replace(/[^0-9.]/g, ''));
+  if (isNaN(num) || num === 0) return;
+  const isFloat = num % 1 !== 0;
+  const suffix  = el.textContent.replace(/[\d.,]/g, '').trim();
+  let start = null;
+  const dur = 900;
+  const run = ts => {
+    if (!start) start = ts;
+    const p    = Math.min((ts - start) / dur, 1);
+    const ease = 1 - Math.pow(1 - p, 3);
+    const val  = isFloat ? (ease * num).toFixed(2) : Math.round(ease * num);
+    el.textContent = val + (suffix ? ' ' + suffix : '');
+    if (p < 1) requestAnimationFrame(run);
+  };
+  requestAnimationFrame(run);
+});
+</script>
+{% endblock %}

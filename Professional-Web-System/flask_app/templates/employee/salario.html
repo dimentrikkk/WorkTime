@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Salário{% endblock %}
+{% block nav %}{% include "_employee_nav.html" %}{% endblock %}
+{% block page_title %}Salário · {{ '%02d/%d' | format(hoje.month, hoje.year) }}{% endblock %}
+{% block page_subtitle %}Cálculo estimado para o mês corrente{% endblock %}
+{% block content %}
+<div class="grid two-col">
+  <div class="card">
+    <header><h3><i class="fa-solid fa-receipt"></i> Decomposição</h3></header>
+    <dl class="info-list">
+      <dt>Valor por hora</dt><dd>{{ '%.2f' | format(info.salario_hora) }} €</dd>
+      <dt>Horas totais</dt><dd>{{ '%.2f' | format(info.total_horas) }} h</dd>
+      <dt>Salário bruto</dt><dd>{{ '%.2f' | format(info.salario_bruto) }} €</dd>
+      <dt>Atrasos</dt><dd>{{ info.atraso_minutos }} min · −{{ '%.2f' | format(info.desconto_atrasos) }} €</dd>
+      <dt>Faltas</dt><dd>{{ info.faltas }} · −{{ '%.2f' | format(info.desconto_faltas) }} €</dd>
+      <dt>Descontos totais</dt><dd>−{{ '%.2f' | format(info.descontos) }} €</dd>
+    </dl>
+  </div>
+  <div class="card highlight">
+    <header><h3><i class="fa-solid fa-money-bill-wave"></i> Líquido a receber</h3></header>
+    <div class="big-number">{{ '%.2f' | format(info.salario_liquido) }} €</div>
+    <p class="muted">Valor estimado com base nas horas registadas até ao momento.</p>
+  </div>
+</div>
+{% endblock %}

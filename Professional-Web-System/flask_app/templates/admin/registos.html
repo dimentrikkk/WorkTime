@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Registos de ponto{% endblock %}
+{% block nav %}{% include "_admin_nav.html" %}{% endblock %}
+{% block page_title %}Registos de ponto{% endblock %}
+{% block page_subtitle %}Histórico de entradas e saídas{% endblock %}
+{% block content %}
+<form method="get" class="filters card">
+  <select name="funcionario_id" onchange="this.form.submit()">
+    <option value="">Todos os funcionários</option>
+    {% for f in funcionarios %}
+      <option value="{{ f.id }}" {{ 'selected' if func_id == f.id }}>{{ f.nome_completo }}</option>
+    {% endfor %}
+  </select>
+</form>
+
+<div class="card">
+  <table class="data">
+    <thead><tr><th>Funcionário</th><th>Cargo</th><th>Tipo</th><th>Quando</th><th>Foto</th></tr></thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td>{{ r.nome_completo }}</td>
+        <td><span class="chip chip-{{ r.cargo }}">{{ r.cargo }}</span></td>
+        <td>{% if r.tipo == 'entrada' %}<span class="badge in">Entrada</span>{% else %}<span class="badge out">Saída</span>{% endif %}</td>
+        <td>{{ r.timestamp }}</td>
+        <td>
+          {% if r.foto_path %}
+            <a href="{{ url_for('admin.uploads', filename=r.foto_path) }}" target="_blank"><img class="thumb-mini" src="{{ url_for('admin.uploads', filename=r.foto_path) }}"></a>
+          {% else %}—{% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="muted center">Sem registos.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Férias{% endblock %}
+{% block nav %}{% include "_admin_nav.html" %}{% endblock %}
+{% block page_title %}Gestão de Férias{% endblock %}
+{% block page_subtitle %}Aprovação de pedidos e saldos por funcionário{% endblock %}
+{% block content %}
+
+<div class="card">
+  <header><h3><i class="fa-solid fa-list-check"></i> Pedidos de férias</h3></header>
+  <table class="data">
+    <thead>
+      <tr><th>Funcionário</th><th>Período</th><th>Dias</th><th>Motivo</th><th>Estado</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td><strong>{{ r.nome_completo }}</strong><br><span class="chip chip-{{ r.cargo }}">{{ r.cargo }}</span></td>
+        <td>{{ r.data_inicio }} → {{ r.data_fim }}</td>
+        <td>{{ r.dias }}</td>
+        <td>{{ r.motivo or '—' }}</td>
+        <td>
+          {% if r.estado == 'aprovado' %}<span class="badge in">Aprovado</span>
+          {% elif r.estado == 'rejeitado' %}<span class="badge out">Rejeitado</span>
+          {% else %}<span class="badge warn">Pendente</span>{% endif %}
+        </td>
+        <td class="actions">
+          {% if r.estado == 'pendente' %}
+          <details class="popmenu">
+            <summary class="btn primary small">Decidir</summary>
+            <form method="post" class="popform">
+              <input type="hidden" name="id" value="{{ r.id }}">
+              <textarea name="resposta" rows="2" placeholder="Resposta opcional"></textarea>
+              <div class="actions-row">
+                <button class="btn success small" name="decisao" value="aprovado"><i class="fa-solid fa-check"></i> Aprovar</button>
+                <button class="btn danger small" name="decisao" value="rejeitado"><i class="fa-solid fa-xmark"></i> Rejeitar</button>
+              </div>
+            </form>
+          </details>
+          {% else %}<span class="muted small">—</span>{% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="muted center">Sem pedidos.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <header><h3><i class="fa-solid fa-chart-pie"></i> Saldos por funcionário</h3></header>
+  <table class="data">
+    <thead><tr><th>Funcionário</th><th>Total/ano</th><th>Gozados</th><th>Restantes</th></tr></thead>
+    <tbody>
+      {% for s in saldos %}
+      <tr>
+        <td>{{ s.func.nome_completo }}</td>
+        <td>{{ s.bal.total }}</td>
+        <td>{{ s.bal.used }}</td>
+        <td><strong>{{ s.bal.remaining }}</strong></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="muted small">Para alterar dias/ano, edite o funcionário.</p>
+</div>
+{% endblock %}

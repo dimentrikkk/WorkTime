@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Os meus registos{% endblock %}
+{% block nav %}{% include "_employee_nav.html" %}{% endblock %}
+{% block page_title %}Registos de trabalho{% endblock %}
+{% block page_subtitle %}Sessões mais recentes{% endblock %}
+{% block content %}
+<div class="card">
+  <table class="data">
+    <thead><tr><th>Data</th><th>Entrada</th><th>Saída</th><th>Total</th><th>Atraso</th></tr></thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td>{{ r.data }}</td>
+        <td>{{ r.hora_entrada }}</td>
+        <td>{{ r.hora_saida or '—' }}</td>
+        <td>{{ format_minutes(r.total_minutos or 0) }}</td>
+        <td>{% if r.atraso_minutos %}<span class="badge warn">{{ r.atraso_minutos }} min</span>{% else %}—{% endif %}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="muted center">Sem registos ainda.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

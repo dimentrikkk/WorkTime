@@ -1,0 +1,14 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "zeAY9_4wkG2pqzuZzblHW"
+uri = "file://flask_app/static/logo.svg"
+type = "image"
+title = "Logo WorkFace (versão escura)"
+
+[[outputs]]
+id = "m8-MYlEzQmpKkT8LNFdRv"
+uri = "file://flask_app/static/logo-white.svg"
+type = "image"
+title = "Logo WorkFace (versão branca)"

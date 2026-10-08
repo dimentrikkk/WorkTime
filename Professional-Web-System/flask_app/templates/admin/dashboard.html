@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Admin{% endblock %}
+{% block nav %}{% include "_admin_nav.html" %}{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}Visão geral da operação de hoje{% endblock %}
+{% block content %}
+
+<div class="grid kpi">
+  <div class="kpi-card kc-purple">
+    <span class="kpi-label">Funcionários ativos</span>
+    <strong data-count="{{ total_func }}">{{ total_func }}</strong>
+    <i class="fa-solid fa-users kpi-icon"></i>
+  </div>
+  <div class="kpi-card kc-green">
+    <span class="kpi-label">Presenças em curso</span>
+    <strong data-count="{{ presentes }}">
+      {% if presentes > 0 %}<span class="dot-live"></span>{% endif %}{{ presentes }}
+    </strong>
+    <i class="fa-solid fa-user-check kpi-icon"></i>
+  </div>
+  <div class="kpi-card kc-cyan">
+    <span class="kpi-label">Horas registadas hoje</span>
+    <strong data-count="{{ horas_hoje }}">{{ horas_hoje }}</strong>
+    <i class="fa-solid fa-stopwatch kpi-icon"></i>
+  </div>
+  <div class="kpi-card kc-red">
+    <span class="kpi-label">Faltas no mês</span>
+    <strong data-count="{{ faltas_mes }}">{{ faltas_mes }}</strong>
+    <i class="fa-solid fa-user-slash kpi-icon"></i>
+  </div>
+</div>
+
+<div class="grid two-col">
+  <div class="card">
+    <header><h3><i class="fa-solid fa-chart-column"></i> Presenças — últimos 7 dias</h3></header>
+    <canvas id="chartPresencas" height="130"></canvas>
+  </div>
+  <div class="card">
+    <header><h3><i class="fa-solid fa-chart-pie"></i> Distribuição por cargo</h3></header>
+    <canvas id="chartCargos" height="130"></canvas>
+  </div>
+</div>
+
+<div class="card">
+  <header>
+    <h3><i class="fa-solid fa-clock-rotate-left"></i> Últimos registos de ponto</h3>
+    <a href="{{ url_for('admin.registos') }}" class="btn ghost small">Ver tudo <i class="fa-solid fa-arrow-right"></i></a>
+  </header>
+  <div class="table-wrap">
+    <table class="data compact">
+      <thead><tr><th>Funcionário</th><th>Cargo</th><th>Tipo</th><th>Quando</th></tr></thead>
+      <tbody>
+        {% for r in ultimos %}
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:9px">
+              <div class="presence-av" style="width:30px;height:30px;font-size:.75rem">
+                {{ r.nome_completo[:1] | upper }}
+              </div>
+              <span>{{ r.nome_completo }}</span>
+            </div>
+          </td>
+          <td><span class="chip chip-{{ r.cargo }}">{{ r.cargo }}</span></td>
+          <td>
+            {% if r.tipo == 'entrada' %}
+              <span class="badge in"><i class="fa-solid fa-arrow-right-to-bracket"></i> Entrada</span>
+            {% else %}
+              <span class="badge out"><i class="fa-solid fa-arrow-right-from-bracket"></i> Saída</span>
+            {% endif %}
+          </td>
+          <td class="muted">{{ r.timestamp }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" class="muted center" style="padding:24px">Sem registos ainda.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const presencas   = {{ presencas_7d | tojson }};
+const cargos      = {{ cargos_count | map(attribute='cargo') | list | tojson }};
+const cargosCount = {{ cargos_count | map(attribute='c')     | list | tojson }};
+
+/* ── Bar chart with gradient ── */
+const ctxBar  = document.getElementById('chartPresencas').getContext('2d');
+const grad = ctxBar.createLinearGradient(0, 0, 0, 200);
+grad.addColorStop(0, 'rgba(124,58,237,.9)');
+grad.addColorStop(1, 'rgba(244,63,94,.6)');
+
+new Chart(ctxBar, {
+  type: 'bar',
+  data: {
+    labels: presencas.map(p => p.data.slice(5)),
+    datasets: [{
+      label: 'Presenças', data: presencas.map(p => p.presencas),
+      backgroundColor: grad, borderRadius: 6, borderSkipped: false,
+    }]
+  },
+  options: {
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { display: false } },
+      y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(0,0,0,.04)' } }
+    }
+  }
+});
+
+/* ── Donut chart ── */
+new Chart(document.getElementById('chartCargos'), {
+  type: 'doughnut',
+  data: {
+    labels: cargos,
+    datasets: [{
+      data: cargosCount,
+      backgroundColor: ['#7c3aed','#059669','#d97706','#e11d48','#f43f5e'],
+      borderWidth: 2, borderColor: '#fff', hoverOffset: 6,
+    }]
+  },
+  options: {
+    cutout: '65%',
+    plugins: { legend: { position: 'bottom', labels: { padding: 14, usePointStyle: true } } }
+  }
+});
+
+/* ── KPI counter animation ── */
+document.querySelectorAll('.kpi-card strong[data-count]').forEach(el => {
+  const raw  = el.dataset.count.trim();
+  const num  = parseFloat(raw.replace(/[^0-9.]/g, ''));
+  if (isNaN(num) || num === 0) return;
+  const isFloat = num % 1 !== 0;
+  let start = null;
+  const dur = 900;
+  const inner = el.childNodes[el.childNodes.length - 1]; // last text node
+  const run = ts => {
+    if (!start) start = ts;
+    const p = Math.min((ts - start) / dur, 1);
+    const ease = 1 - Math.pow(1 - p, 3);
+    const val = isFloat ? (ease * num).toFixed(1) : Math.round(ease * num);
+    if (inner.nodeType === 3) inner.textContent = val;
+    else el.lastChild.textContent = val;
+    if (p < 1) requestAnimationFrame(run);
+  };
+  requestAnimationFrame(run);
+});
+</script>
+{% endblock %}

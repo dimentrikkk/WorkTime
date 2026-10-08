@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Horário semanal{% endblock %}
+{% block nav %}{% include "_employee_nav.html" %}{% endblock %}
+{% block page_title %}Horário semanal{% endblock %}
+{% block page_subtitle %}Definido pela administração{% endblock %}
+{% block content %}
+<div class="card">
+  <table class="data">
+    <thead><tr><th>Dia</th><th>Entrada</th><th>Saída</th></tr></thead>
+    <tbody>
+      {% for d in range(7) %}
+      <tr>
+        <td><strong>{{ dias[d] }}</strong></td>
+        <td>{{ by_day[d].hora_entrada if d in by_day else '—' }}</td>
+        <td>{{ by_day[d].hora_saida if d in by_day else '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

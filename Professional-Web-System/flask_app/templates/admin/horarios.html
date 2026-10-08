@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Horários{% endblock %}
+{% block nav %}{% include "_admin_nav.html" %}{% endblock %}
+{% block page_title %}Horários{% endblock %}
+{% block page_subtitle %}Defina o horário semanal de cada funcionário{% endblock %}
+{% block content %}
+<form method="get" class="filters card">
+  <select name="funcionario_id" onchange="this.form.submit()">
+    <option value="">Selecione um funcionário…</option>
+    {% for f in funcionarios %}
+      <option value="{{ f.id }}" {{ 'selected' if selected_id == f.id }}>{{ f.nome_completo }}</option>
+    {% endfor %}
+  </select>
+</form>
+
+{% if selected_id %}
+<form method="post" class="card">
+  <input type="hidden" name="funcionario_id" value="{{ selected_id }}">
+  <table class="data">
+    <thead><tr><th>Dia</th><th>Hora de entrada</th><th>Hora de saída</th></tr></thead>
+    <tbody>
+      {% for d in range(7) %}
+      <tr>
+        <td><strong>{{ dias[d] }}</strong></td>
+        <td><input type="time" name="entrada_{{ d }}" value="{{ by_day[d].hora_entrada if d in by_day else '' }}"></td>
+        <td><input type="time" name="saida_{{ d }}" value="{{ by_day[d].hora_saida if d in by_day else '' }}"></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="actions-row">
+    <button class="btn primary"><i class="fa-solid fa-floppy-disk"></i> Guardar horário</button>
+  </div>
+</form>
+{% endif %}
+{% endblock %}

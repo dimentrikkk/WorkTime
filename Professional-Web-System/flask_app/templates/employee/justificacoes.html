@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Justificações de Falta{% endblock %}
+{% block nav %}{% include "_employee_nav.html" %}{% endblock %}
+{% block page_title %}Justificações de Falta{% endblock %}
+{% block page_subtitle %}Submeta um pedido para que a sua falta seja considerada justificada{% endblock %}
+{% block content %}
+
+<form method="post" class="card form">
+  <header><h3><i class="fa-solid fa-file-circle-plus"></i> Novo pedido</h3></header>
+  <div class="grid two-col">
+    <label>Data de início *
+      <input type="date" name="data_inicio" required>
+    </label>
+    <label>Data de fim
+      <input type="date" name="data_fim">
+    </label>
+    <label class="full">Motivo *
+      <textarea name="motivo" rows="3" required placeholder="Ex.: consulta médica, assistência familiar, atestado..."></textarea>
+    </label>
+  </div>
+  <div class="actions-row">
+    <button class="btn primary" type="submit"><i class="fa-solid fa-paper-plane"></i> Submeter pedido</button>
+  </div>
+</form>
+
+<div class="card">
+  <header><h3><i class="fa-solid fa-list-check"></i> Os meus pedidos</h3></header>
+  <table class="data">
+    <thead><tr><th>Data</th><th>Motivo</th><th>Estado</th><th>Resposta</th><th>Submetido</th></tr></thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td>{{ r.data_inicio }}{% if r.data_fim != r.data_inicio %} → {{ r.data_fim }}{% endif %}</td>
+        <td>{{ r.motivo }}</td>
+        <td>
+          {% if r.estado == 'aprovado' %}<span class="badge in">Aprovado</span>
+          {% elif r.estado == 'rejeitado' %}<span class="badge out">Rejeitado</span>
+          {% else %}<span class="badge warn">Pendente</span>{% endif %}
+        </td>
+        <td>{{ r.resposta_admin or '—' }}</td>
+        <td class="muted small">{{ r.created_at }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="muted center">Ainda não submeteu pedidos.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
